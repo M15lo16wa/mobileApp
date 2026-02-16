@@ -1,75 +1,222 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet, View, FlatList, Dimensions, TextInput, TouchableOpacity, Text } from 'react-native';
+import React, { useRef } from 'react';
+import { FontAwesome5 } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+
+const { width: screenWidth } = Dimensions.get('window');
+
+const onboardingSlides = [
+  {
+    key: '1',
+    title: 'Bienvenue sur votre carnet de santé',
+    text: 'Toutes vos informations de santé, sécurisées et accessibles à tout moment.',
+  },
+  {
+    key: '2',
+    title: 'Partagez avec vos médecins',
+    text: 'Partagez facilement votre dossier avec les professionnels de santé de votre choix.',
+  },
+  {
+    key: '3',
+    title: 'Prenez le contrôle de votre santé',
+    text: 'Gérez vos rendez-vous, traitements et bien plus encore.',
+  },
+];
 
 export default function HomeScreen() {
+  const flatListRef = useRef<FlatList>(null);
+  const router = useRouter();
+  const textColor = '#005A9C';
+  const placeholderColor = '#6495ED';
+
+  const allData = [...onboardingSlides, { key: 'form' }];
+
+  const renderItem = ({ item }: { item: { key: string, title?: string, text?: string } }) => {
+    if (item.key === 'form') {
+      return (
+        <View style={[styles.slide, { width: screenWidth }]}>
+          <View style={styles.formContainer}>
+            <ThemedText type="subtitle" style={{ color: textColor }}>
+              Connectez-vous
+            </ThemedText>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  color: textColor,
+                  borderColor: placeholderColor,
+                },
+              ]}
+              placeholder="Numéro d'assurance sociale"
+              placeholderTextColor={placeholderColor}
+              keyboardType="numeric"
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  color: textColor,
+                  borderColor: placeholderColor,
+                },
+              ]}
+              placeholder="Mot de passe"
+              placeholderTextColor={placeholderColor}
+              secureTextEntry
+            />
+            <TouchableOpacity style={styles.button} onPress={() => {}}>
+              <Text style={styles.buttonText}>Connexion</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.outlineButton]}
+              onPress={() => router.push('/register')}>
+              <Text style={[styles.buttonText, styles.outlineButtonText]}>S'inscrire</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    }
+    return (
+      <View style={[styles.slide, { width: screenWidth }]}>
+        <View style={styles.card}>
+          <ThemedText type="title" style={{ color: textColor }}>
+            {item.title}
+          </ThemedText>
+          <ThemedText style={[styles.slideText, { color: textColor }]}>{item.text}</ThemedText>
+          <FontAwesome5 name="arrow-right" size={24} color={textColor} style={styles.arrowIcon} />
+        </View>
+      </View>
+    );
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
+    <SafeAreaView style={styles.container}>
+      <View style={styles.blueWaveBackground} />
+      <View style={styles.headerContainer}>
+        <FontAwesome5 name="heartbeat" size={50} color="red" />
+        <ThemedText type="title" style={[styles.appName, { color: textColor }]}>
+          Santé Sénégal
         </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </View>
+      <FlatList
+        ref={flatListRef}
+        data={allData}
+        renderItem={renderItem}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        bounces={false}
+        style={styles.flatList}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
+  blueWaveBackground: {
+    backgroundColor: '#87CEFA',
+    height: '45%',
+    width: '150%',
     position: 'absolute',
+    borderBottomLeftRadius: 1000,
+    borderBottomRightRadius: 1000,
+    transform: [{ translateX: -screenWidth * 0.25 }],
+  },
+  headerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    paddingBottom: 10,
+  },
+  appName: {
+    marginTop: 10,
+    fontWeight: 'bold',
+  },
+  flatList: {
+    flex: 2,
+  },
+  slide: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  card: {
+    width: '85%',
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    borderRadius: 24,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  slideText: {
+    textAlign: 'center',
+    marginTop: 16,
+  },
+  arrowIcon: {
+    position: 'absolute',
+    bottom: 20,
+    right: 25,
+  },
+  formContainer: {
+    width: '90%',
+    padding: 24,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  input: {
+    height: 44,
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 12,
+    paddingHorizontal: 16,
+    width: '100%',
+  },
+  button: {
+    backgroundColor: '#005A9C',
+    paddingVertical: 14,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  outlineButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#005A9C',
+  },
+  outlineButtonText: {
+    color: '#005A9C',
   },
 });
